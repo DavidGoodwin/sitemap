@@ -16,9 +16,10 @@ abstract class CountryRestriction
         $this->countries = $countries;
     }
 
-    private function validateCountry()
+    private function validateCountry(string $country)
     {
         // TODO: ISO 3166
+        throw new \Exception("Not yet implemented");
     }
 
     abstract public function areAllowed(): bool;
