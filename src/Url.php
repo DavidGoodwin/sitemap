@@ -48,45 +48,28 @@ class Url
         $this->location = $location;
     }
 
-    /**
-     * @return string
-     */
     public function getLocation(): string
     {
         return $this->location;
     }
 
-    /**
-     * @param string $location
-     * @return Url
-     */
-    public function setLocation(string $location): Url
+    public function setLocation(string $location): self
     {
         $this->location = $location;
         return $this;
     }
 
-    /**
-     * @return \DateTimeInterface
-     */
     public function getLastModified(): ?\DateTimeInterface
     {
         return $this->lastModified;
     }
 
-    /**
-     * @param \DateTimeInterface $lastModified
-     * @return Url
-     */
-    public function setLastModified(\DateTimeInterface $lastModified): Url
+    public function setLastModified(\DateTimeInterface $lastModified): self
     {
         $this->lastModified = $lastModified;
         return $this;
     }
 
-    /**
-     * @return string
-     */
     public function getChangeFrequency(): ?string
     {
         return $this->changeFrequency;

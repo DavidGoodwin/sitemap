@@ -65,15 +65,18 @@ class Sitemap
     protected $useGzip = false;
 
     /**
-     * @var WriterInterface that does the actual writing
+     * @var null|WriterInterface that does the actual writing
      */
     protected $writerBackend;
 
     /**
-     * @var XMLWriter
+     * @var null|XMLWriter
      */
     protected $writer;
 
+    /**
+     * @var array
+     */
     private $extensionClasses;
 
     /**
@@ -143,7 +146,7 @@ class Sitemap
          * elements that did not fit into the previous file. (See self::flush)
          */
         $this->writer->text(PHP_EOL);
-        $this->flush(true);
+        $this->flush();
     }
 
     /**
@@ -161,8 +164,11 @@ class Sitemap
             $this->urlsCount = 0;
 
             $this->flush(0);
-            $this->writerBackend->finish();
-            $this->writerBackend = null;
+
+            if($this->writerBackend !== null) {
+                $this->writerBackend->finish();
+                $this->writerBackend = null;
+            }
 
             $this->byteCount = 0;
         }
@@ -185,8 +191,13 @@ class Sitemap
      * @throws \RuntimeException
      * @throws \OverflowException
      */
-    protected function flush($footSize = 10): void
+    protected function flush(int $footSize = 10): void
     {
+
+        if($this->writer === null) {
+            throw new \RuntimeException("No writer?");
+        }
+
         $data = $this->writer->flush();
         $dataSize = mb_strlen($data, '8bit');
 
@@ -202,6 +213,10 @@ class Sitemap
             }
             $this->finishFile();
             $this->createNewFile();
+        }
+
+        if($this->writerBackend === null) {
+            throw new \RuntimeException("No writerBackend?");
         }
 
         $this->writerBackend->append($data);
@@ -242,11 +257,16 @@ class Sitemap
      */
     protected function writeUrl(Url $url): void
     {
+        if($this->writer === null) {
+            throw new \RuntimeException("No writer?");
+        }
+
         $this->writer->startElement('url');
         $this->writer->writeElement('loc', $url->getLocation());
 
-        if ($url->getLastModified() !== null) {
-            $this->writer->writeElement('lastmod', $url->getLastModified()->format('c'));
+        $lm = $url->getLastModified();
+        if($lm !== null) {
+            $this->writer->writeElement('lastmod', $lm->format('c'));
         }
 
         if ($url->getChangeFrequency() !== null) {
@@ -276,14 +296,20 @@ class Sitemap
         }
 
         $parts = pathinfo($this->filePath);
-        if ($parts['extension'] === 'gz') {
+        if (isset($parts['extension']) && $parts['extension'] === 'gz') {
             $filenameParts = pathinfo($parts['filename']);
             if (!empty($filenameParts['extension'])) {
                 $parts['filename'] = $filenameParts['filename'];
                 $parts['extension'] = $filenameParts['extension'] . '.gz';
             }
         }
-        return $parts['dirname'] . DIRECTORY_SEPARATOR . $parts['filename'] . '-' . $this->fileCount . '.' . $parts['extension'];
+        $ext = $parts['extension'] ?? '';
+
+        if($ext !== '') {
+            $ext = '.' . $ext;
+        }
+
+        return $parts['dirname'] . DIRECTORY_SEPARATOR . $parts['filename'] . '-' . $this->fileCount . $ext ;
     }
 
     /**
@@ -365,6 +391,10 @@ class Sitemap
      */
     protected function addHeader(): void
     {
+        if ($this->writer === null) {
+            throw new \RuntimeException('No Writer?');
+        }
+
         $this->writer->startDocument('1.0', 'UTF-8');
         $this->writer->setIndent($this->useIndent);
         $this->writer->startElement('urlset');

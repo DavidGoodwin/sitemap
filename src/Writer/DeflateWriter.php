@@ -8,19 +8,19 @@ namespace SamDark\Sitemap\Writer;
 class DeflateWriter implements WriterInterface
 {
     /**
-     * @var resource for target file
+     * @var null|resource for target file
      */
     private $file;
 
     /**
-     * @var resource for writable incremental deflate context
+     * @var false|resource for writable incremental deflate context
      */
     private $deflateContext;
 
     /**
      * @param string $filename target file
      */
-    public function __construct($filename)
+    public function __construct(string $filename)
     {
         $this->file = fopen($filename, 'ab');
         $this->deflateContext = deflate_init(ZLIB_ENCODING_GZIP);
@@ -36,6 +36,9 @@ class DeflateWriter implements WriterInterface
     {
         \assert($this->file !== null);
 
+        if($this->deflateContext === false) {
+            throw new \RuntimeException("DeflateContext was false.");
+        }
         $compressedChunk = deflate_add($this->deflateContext, $data, $flushMode);
         fwrite($this->file, $compressedChunk);
     }
@@ -58,6 +61,6 @@ class DeflateWriter implements WriterInterface
         $this->write('', ZLIB_FINISH);
 
         $this->file = null;
-        $this->deflateContext = null;
+        $this->deflateContext = false;
     }
 }
