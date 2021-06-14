@@ -32,22 +32,55 @@ class SitemapTest extends TestCase
         $sitemap->addUrl(new Url('http://example.com/mylink1'));
         $sitemap->addUrl(
             (new Url('http://example.com/mylink2'))
-                ->setLastModified(new \DateTime())
+                ->setLastModified(new \DateTime('2021-01-11 01:01'))
         );
         $sitemap->addUrl(
             (new Url('http://example.com/mylink3'))
-                ->setLastModified(new \DateTime())
+                ->setLastModified(new \DateTime('2021-01-02 03:04'))
                 ->setChangeFrequency(Frequency::HOURLY)
         );
         $sitemap->addUrl(
             (new Url('http://example.com/mylink4'))
                 ->setChangeFrequency(Frequency::DAILY)
-                ->setLastModified(new \DateTime())
+                ->setLastModified(new \DateTime('2021-01-02 03:04'))
                 ->setPriority(0.3)
         );
         $sitemap->write();
 
         $this->assertFileExists($fileName);
+
+        $expected = <<<EOF
+<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+ <url>
+  <loc>http://example.com/mylink1</loc>
+  <priority>0.5</priority>
+ </url>
+ <url>
+  <loc>http://example.com/mylink2</loc>
+  <lastmod>2021-01-11T01:01:00+00:00</lastmod>
+  <priority>0.5</priority>
+ </url>
+ <url>
+  <loc>http://example.com/mylink3</loc>
+  <lastmod>2021-01-02T03:04:00+00:00</lastmod>
+  <changefreq>hourly</changefreq>
+  <priority>0.5</priority>
+ </url>
+ <url>
+  <loc>http://example.com/mylink4</loc>
+  <lastmod>2021-01-02T03:04:00+00:00</lastmod>
+  <changefreq>daily</changefreq>
+  <priority>0.3</priority>
+ </url>
+</urlset>
+EOF;
+
+        $x = trim(file_get_contents($fileName));
+
+        $this->assertEquals($expected, $x);
+
+
         $this->assertValidXml($fileName, 'sitemap');
     }
 
