@@ -29,13 +29,9 @@ class SitemapTest extends TestCase
         $fileName = $this->getTempPath('testWritingFile.xml');
 
         $sitemap = new Sitemap($fileName);
-        $sitemap->addUrl(new Url('http://example.com/mylink1'));
+        $sitemap->addUrl(new Url('http://example.com/test.html&q=name'));
         $sitemap->addUrl(
-            (new Url('http://example.com/mylink2'))
-                ->setLastModified(new \DateTime('2021-01-11 01:01'))
-        );
-        $sitemap->addUrl(
-            (new Url('http://example.com/mylink3'))
+            (new Url('http://example.com/mylink?foo=bar'))
                 ->setLastModified(new \DateTime('2021-01-02 03:04'))
                 ->setChangeFrequency(Frequency::HOURLY)
         );
@@ -53,16 +49,11 @@ class SitemapTest extends TestCase
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
  <url>
-  <loc>http://example.com/mylink1</loc>
+  <loc>http://example.com/test.html&amp;q=name</loc>
   <priority>0.5</priority>
  </url>
  <url>
-  <loc>http://example.com/mylink2</loc>
-  <lastmod>2021-01-11T01:01:00+00:00</lastmod>
-  <priority>0.5</priority>
- </url>
- <url>
-  <loc>http://example.com/mylink3</loc>
+  <loc>http://example.com/mylink?foo=bar</loc>
   <lastmod>2021-01-02T03:04:00+00:00</lastmod>
   <changefreq>hourly</changefreq>
   <priority>0.5</priority>
